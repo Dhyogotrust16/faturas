@@ -11,33 +11,39 @@ const ConsultarPrazo = {
         api.getClientes()
       ]);
       
-      this.loadClientesSelect();
       this.aplicarFiltros();
+      
+      // Event listener para busca em tempo real
+      const inputCliente = document.getElementById('filtro-cliente');
+      if (inputCliente) {
+        inputCliente.addEventListener('input', () => this.aplicarFiltros());
+      }
     } catch (error) {
       Utils.showNotification('Erro ao carregar faturas', 'error');
     }
   },
 
-  loadClientesSelect() {
-    const select = document.getElementById('filtro-cliente');
-    if (!select) return;
-
-    select.innerHTML = '<option value="">Todos</option>' +
-      this.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-  },
-
   aplicarFiltros() {
     this.filtros = {
-      cliente: document.getElementById('filtro-cliente')?.value,
+      cliente: document.getElementById('filtro-cliente')?.value.toLowerCase().trim(),
       status: document.getElementById('filtro-status')?.value,
       periodo: document.getElementById('filtro-periodo')?.value
     };
 
     let faturasFiltradas = [...this.faturas];
 
-    // Filtro por cliente
+    // Filtro por cliente (nome ou CPF/CNPJ)
     if (this.filtros.cliente) {
-      faturasFiltradas = faturasFiltradas.filter(f => f.cliente_id == this.filtros.cliente);
+      faturasFiltradas = faturasFiltradas.filter(f => {
+        const cliente = this.clientes.find(c => c.id === f.cliente_id);
+        if (!cliente) return false;
+        
+        const nome = (cliente.nome || '').toLowerCase();
+        const cpfCnpj = (cliente.cpf_cnpj || '').replace(/[^\d]/g, '');
+        const busca = this.filtros.cliente.replace(/[^\d]/g, '');
+        
+        return nome.includes(this.filtros.cliente) || cpfCnpj.includes(busca);
+      });
     }
 
     // Filtro por status

@@ -91,7 +91,7 @@ const ConsultarPrazo = {
     if (faturas.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="empty-state">
+          <td colspan="3" class="empty-state">
             <p>Nenhuma fatura encontrada com os filtros aplicados</p>
           </td>
         </tr>
@@ -100,23 +100,11 @@ const ConsultarPrazo = {
     }
 
     tbody.innerHTML = faturas.map(f => {
-      const vencimento = new Date(f.data_vencimento);
-      const hoje = new Date();
-      const statusClass = f.status === 'pago' ? 'success' : 
-                         (vencimento < hoje ? 'danger' : 'warning');
-      
-      const notaParcela = f.numero_fatura.split('-');
-      const nota = notaParcela[0];
-      const parcela = notaParcela[1] || '1/1';
-
       return `
         <tr>
-          <td><strong>${nota}</strong></td>
-          <td>${parcela}</td>
           <td>${f.cliente_nome}</td>
-          <td><strong>${Utils.formatCurrency(f.valor)}</strong></td>
           <td>${Utils.formatDate(f.data_vencimento)}</td>
-          <td><span class="badge badge-${statusClass}">${f.status}</span></td>
+          <td><strong>${Utils.formatCurrency(f.valor)}</strong></td>
         </tr>
       `;
     }).join('');

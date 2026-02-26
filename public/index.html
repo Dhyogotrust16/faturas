@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visão Faturas</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="shortcut icon" type="image/png" href="images/favicon.png">
+  <link rel="apple-touch-icon" href="images/favicon.png">
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <div id="login-page" class="page">
+      <div class="card card-login">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <img src="images/logo-visao.png" alt="Visão Combustíveis" style="max-width: 200px; height: auto;">
+        </div>
+        <form id="login-form">
+          <div class="form-group">
+            <label>Usuário</label>
+            <input type="text" id="login-usuario" required>
+          </div>
+          <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="login-senha" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Entrar</button>
+          <button type="button" class="btn-link" onclick="localStorage.clear(); location.reload();" style="color: #999; font-size: 12px;">Limpar sessão</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="registro-page" class="page hidden">
+      <div class="card card-login">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <img src="images/logo-visao.png" alt="Visão Combustíveis" style="max-width: 200px; height: auto;">
+          <h2 style="margin-top: 20px; color: var(--primary);">Criar Conta</h2>
+        </div>
+        <form id="registro-form">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="reg-nome" required>
+          </div>
+          <div class="form-group">
+            <label>Usuário</label>
+            <input type="text" id="reg-usuario" required>
+          </div>
+          <div class="form-group">
+            <label>Email (opcional)</label>
+            <input type="email" id="reg-email">
+          </div>
+          <div class="form-group">
+            <label>Senha</label>
+            <input type="password" id="reg-senha" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Criar Conta</button>
+          <button type="button" class="btn-link" onclick="Auth.showLogin()">Já tem conta? Faça login</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="main-page" class="page hidden">
+      <nav>
+        <div class="nav-content">
+          <div class="nav-brand">
+            <img src="images/logo-visao.png" alt="Visão Combustíveis" style="height: 50px; margin-right: 10px;">
+            <h2>Visão Faturas</h2>
+          </div>
+          <div class="nav-links">
+            <a href="#" onclick="router.navigate('dashboard'); return false;">Dashboard</a>
+            <a href="#" onclick="openEmpresaModal(); return false;">Empresa</a>
+            <a href="#" onclick="openClientesModal(); return false;">Clientes</a>
+            <a href="#" onclick="openFaturasModal(); return false;">Faturas</a>
+            <a href="#" onclick="router.navigate('consultar-prazo'); return false;">Consultar a prazo</a>
+            <a href="#" id="nav-usuarios" class="hidden" onclick="router.navigate('usuarios'); return false;">👤 Usuários</a>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <span id="usuario-logado" style="font-size: 14px; color: var(--text-light);">👤 Carregando...</span>
+            <button class="btn btn-logout btn-danger" onclick="Auth.logout()">Sair</button>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container">
+        <div id="dashboard-section" class="section">
+          <div class="section-header">
+            <h1>📊 Dashboard</h1>
+          </div>
+          <div class="stats">
+            <div class="stat-card">
+              <h3>👥 Clientes</h3>
+              <p id="stat-clientes" class="stat-number">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>📄 Faturas</h3>
+              <p id="stat-faturas" class="stat-number">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>⏳ Pendentes</h3>
+              <p id="stat-pendentes" class="stat-number">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>⚠️ Vencidas</h3>
+              <p id="stat-vencidas" class="stat-number">0</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="empresa-cadastrar-section" class="section hidden">
+          <div class="section-header">
+            <h1>🏢 Cadastrar Empresa</h1>
+          </div>
+          <div class="card">
+            <h3>Informações da Empresa</h3>
+            <form id="empresa-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nome Fantasia *</label>
+                  <input type="text" id="empresa-nome" placeholder="Nome da empresa" required>
+                </div>
+                <div class="form-group">
+                  <label>Razão Social *</label>
+                  <input type="text" id="empresa-razao" placeholder="Razão social completa" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>CNPJ *</label>
+                  <input type="text" id="empresa-cnpj" placeholder="00.000.000/0000-00" required>
+                </div>
+                <div class="form-group">
+                  <label>Inscrição Estadual (IE)</label>
+                  <input type="text" id="empresa-ie" placeholder="000.000.000.000">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="text" id="empresa-telefone" placeholder="(00) 0000-0000">
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="empresa-email" placeholder="contato@empresa.com">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Endereço</label>
+                <input type="text" id="empresa-endereco" placeholder="Rua, número, bairro, cidade, estado, CEP">
+              </div>
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">💾 Salvar Dados</button>
+                <button type="button" class="btn btn-secondary" onclick="router.navigate('empresa-listar')">📋 Ver Dados</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="empresa-listar-section" class="section hidden">
+          <div class="section-header">
+            <h1>📋 Lista de Empresas</h1>
+          </div>
+          <div class="card card-full-width">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3>Todas as Empresas</h3>
+              <button class="btn btn-primary" onclick="router.navigate('empresa-cadastrar')">➕ Nova Empresa</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="empresas-table">
+                <thead>
+                  <tr>
+                    <th>Nome Fantasia</th>
+                    <th>Razão Social</th>
+                    <th>CNPJ</th>
+                    <th>Email</th>
+                    <th style="width: 200px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="empresa-editar-section" class="section hidden">
+          <div class="section-header">
+            <h1>✏️ Editar Empresa</h1>
+          </div>
+          <div class="card">
+            <h3>Informações da Empresa</h3>
+            <form id="empresa-edit-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nome Fantasia *</label>
+                  <input type="text" id="empresa-nome" placeholder="Nome da empresa" required>
+                </div>
+                <div class="form-group">
+                  <label>Razão Social *</label>
+                  <input type="text" id="empresa-razao" placeholder="Razão social completa" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>CNPJ *</label>
+                  <input type="text" id="empresa-cnpj" placeholder="00.000.000/0000-00" required>
+                </div>
+                <div class="form-group">
+                  <label>Inscrição Estadual (IE)</label>
+                  <input type="text" id="empresa-ie" placeholder="000.000.000.000">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="text" id="empresa-telefone" placeholder="(00) 0000-0000">
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="empresa-email" placeholder="contato@empresa.com">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Endereço</label>
+                <input type="text" id="empresa-endereco" placeholder="Rua, número, bairro, cidade, estado, CEP">
+              </div>
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                <button type="button" class="btn btn-secondary" onclick="router.navigate('empresa-listar')">✖️ Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="clientes-cadastrar-section" class="section hidden">
+          <div class="section-header">
+            <h1>➕ Cadastrar Cliente</h1>
+          </div>
+          <div class="card">
+            <h3>Novo Cliente</h3>
+            <form id="cliente-form">
+              <input type="hidden" id="cliente-id">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nome *</label>
+                  <input type="text" id="cliente-nome" placeholder="Nome completo" required>
+                </div>
+                <div class="form-group">
+                  <label>CPF/CNPJ *</label>
+                  <input type="text" id="cliente-cpf" placeholder="000.000.000-00" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="cliente-email" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-group">
+                  <label>Telefone</label>
+                  <input type="text" id="cliente-telefone" placeholder="(00) 00000-0000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Endereço</label>
+                <input type="text" id="cliente-endereco" placeholder="Rua, número, bairro, cidade">
+              </div>
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                <button type="button" class="btn btn-secondary" onclick="Clientes.reset()">✖️ Cancelar</button>
+                <button type="button" class="btn btn-secondary" onclick="router.navigate('clientes-listar')">📋 Ver Lista</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="clientes-listar-section" class="section hidden">
+          <div class="section-header">
+            <h1>📋 Lista de Clientes</h1>
+          </div>
+          
+          <!-- Filtros -->
+          <div class="card" style="margin-bottom: 20px;">
+            <h3>🔍 Filtros</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Buscar por Nome ou CPF/CNPJ</label>
+                <input type="text" id="filtro-cliente-pesquisa" placeholder="Digite para buscar...">
+              </div>
+            </div>
+          </div>
+          
+          <div class="card card-full-width">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3>Todos os Clientes <span id="clientes-count" style="color: var(--text-light); font-size: 14px;"></span></h3>
+              <button class="btn btn-primary" onclick="router.navigate('clientes-cadastrar')">➕ Novo Cliente</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="clientes-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>CPF/CNPJ</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th style="width: 170px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="faturas-cadastrar-section" class="section hidden">
+          <div class="section-header">
+            <h1>➕ Cadastrar Fatura</h1>
+          </div>
+          <div class="card">
+            <h3>Nova Fatura</h3>
+            <form id="fatura-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Empresa *</label>
+                  <select id="fatura-empresa" required>
+                    <option value="">Selecione uma empresa</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Cliente *</label>
+                  <select id="fatura-cliente" required>
+                    <option value="">Selecione um cliente</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Número da Fatura *</label>
+                  <input type="text" id="fatura-numero" placeholder="FAT-001" required>
+                </div>
+                <div class="form-group">
+                  <label>Valor *</label>
+                  <input type="number" step="0.01" id="fatura-valor" placeholder="0.00" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Data de Vencimento *</label>
+                  <input type="date" id="fatura-vencimento" required>
+                </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <select id="fatura-status">
+                    <option value="pendente">Pendente</option>
+                    <option value="pago">Pago</option>
+                    <option value="vencido">Vencido</option>
+                  </select>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">💾 Criar Fatura</button>
+                <button type="button" class="btn btn-secondary" onclick="router.navigate('faturas-listar')">📋 Ver Lista</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="faturas-listar-section" class="section hidden">
+          <div class="section-header">
+            <h1>📋 Lista de Faturas</h1>
+          </div>
+          <div class="card">
+            <h3>🔍 Filtros</h3>
+            <div class="form-row filtros-inline">
+              <div class="form-group">
+                <label>Pesquisar Cliente</label>
+                <input type="text" id="filtro-fatura-pesquisa" placeholder="Nome ou CPF/CNPJ do cliente">
+              </div>
+              <div class="form-group">
+                <label>Empresa</label>
+                <select id="filtro-fatura-empresa">
+                  <option value="">Todas as empresas</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="filtro-fatura-status">
+                  <option value="">Todos</option>
+                  <option value="pendente">Pendente</option>
+                  <option value="pago">Pago</option>
+                  <option value="vencido">Vencido</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card card-full-width">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3>Todas as Faturas <span id="faturas-count" style="color: var(--text-light); font-size: 14px;"></span></h3>
+              <div class="btn-group">
+                <button class="btn btn-primary" onclick="router.navigate('faturas-cadastrar')">➕ Nova Fatura</button>
+                <button class="btn btn-secondary" onclick="router.navigate('faturas-upload')">📤 Upload</button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table id="faturas-table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Número</th>
+                    <th>Data Vencimento</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th style="width: 150px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="faturas-upload-section" class="section hidden">
+          <div class="section-header">
+            <h1>📤 Upload de Faturas</h1>
+          </div>
+          <div class="card">
+            <h3>Enviar Arquivo</h3>
+            <form id="upload-form">
+              <div class="form-group">
+                <label>Arquivo (PDF, CSV ou XLSX) *</label>
+                <input type="file" id="upload-arquivo" accept=".pdf,.csv,.xlsx" required>
+              </div>
+              
+              <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h4 style="margin-top: 0; font-size: 14px;">📋 Formatos de CSV Suportados:</h4>
+                
+                <p style="margin: 8px 0; font-weight: 600;">Formato Simples:</p>
+                <code style="display: block; background: white; padding: 8px; border-radius: 4px; font-size: 12px; margin-bottom: 12px;">
+                  cliente_id,numero_fatura,valor,data_vencimento<br>
+                  1,FAT-001,1500.00,2026-03-15
+                </code>
+                
+                <p style="margin: 8px 0; font-weight: 600;">Formato Completo (busca cliente por nome):</p>
+                <code style="display: block; background: white; padding: 8px; border-radius: 4px; font-size: 12px;">
+                  cliente,numero_fatura,valor,data_vencimento,situacao<br>
+                  JOÃO DA SILVA,FAT-001,1500.00,25/02/2026,PENDENTE
+                </code>
+                
+                <p style="margin-top: 12px; font-size: 13px; color: #666;">
+                  💡 Para CSV: apenas selecione o arquivo e a empresa<br>
+                  💡 Para PDF: preencha também os dados da fatura
+                </p>
+              </div>
+
+              <div class="form-group">
+                <label>Empresa *</label>
+                <select id="upload-empresa" required>
+                  <option value="">Selecione uma empresa</option>
+                </select>
+              </div>
+
+              <div id="upload-fields-pdf" style="display: none;">
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid #ddd;">
+                <h4 style="margin-bottom: 16px;">Dados da Fatura (apenas para PDF)</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Cliente *</label>
+                    <select id="upload-cliente">
+                      <option value="">Selecione um cliente</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Número da Fatura *</label>
+                    <input type="text" id="upload-numero" placeholder="FAT-001">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Valor *</label>
+                    <input type="number" step="0.01" id="upload-valor" placeholder="0.00">
+                  </div>
+                  <div class="form-group">
+                    <label>Data de Vencimento *</label>
+                    <input type="date" id="upload-vencimento">
+                  </div>
+                </div>
+              </div>
+
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">📤 Fazer Upload</button>
+                <button type="button" class="btn btn-secondary" onclick="router.navigate('faturas-listar')">📋 Ver Lista</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="consultar-prazo-section" class="section hidden">
+          <h1>Consultar Notas a Prazo</h1>
+          <div class="card">
+            <h3>Filtros</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label>Cliente</label>
+                <select id="filtro-cliente">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="filtro-status">
+                  <option value="">Todos</option>
+                  <option value="pendente">Pendente</option>
+                  <option value="pago">Pago</option>
+                  <option value="vencido">Vencido</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Período</label>
+                <select id="filtro-periodo">
+                  <option value="">Todos</option>
+                  <option value="vencendo">Vencendo (7 dias)</option>
+                  <option value="mes">Este mês</option>
+                  <option value="vencidas">Vencidas</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="ConsultarPrazo.aplicarFiltros()">Aplicar Filtros</button>
+          </div>
+
+          <div class="card">
+            <h3>Notas a Prazo</h3>
+            <div style="margin-bottom: 16px;">
+              <strong>Total: R$ <span id="total-prazo">0.00</span></strong> | 
+              <strong>Pendente: R$ <span id="total-pendente">0.00</span></strong> | 
+              <strong>Pago: R$ <span id="total-pago">0.00</span></strong>
+            </div>
+            <table id="consultar-prazo-table">
+              <thead>
+                <tr>
+                  <th>Nota</th>
+                  <th>Parcela</th>
+                  <th>Cliente</th>
+                  <th>Valor</th>
+                  <th>Vencimento</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Seção de Usuários (apenas para admins) -->
+        <div id="usuarios-section" class="section hidden">
+          <div class="section-header">
+            <h1>👤 Gerenciar Usuários</h1>
+          </div>
+          
+          <div class="card">
+            <h3>Cadastrar Novo Usuário</h3>
+            <form id="usuario-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nome Completo *</label>
+                  <input type="text" id="usuario-nome" required>
+                </div>
+                <div class="form-group">
+                  <label>Usuário *</label>
+                  <input type="text" id="usuario-usuario" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Email (opcional)</label>
+                  <input type="email" id="usuario-email">
+                </div>
+                <div class="form-group">
+                  <label>Senha *</label>
+                  <input type="password" id="usuario-senha" required minlength="6">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="usuario-is-admin" style="width: auto; cursor: pointer;">
+                    <span>👑 Tornar este usuário administrador</span>
+                  </label>
+                  <small style="color: var(--text-light); display: block; margin-top: 4px;">
+                    Administradores podem cadastrar e gerenciar outros usuários
+                  </small>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Salvar Usuário</button>
+                <button type="button" class="btn btn-secondary" onclick="Usuarios.cancelEdit()" id="btn-cancelar-usuario" style="display: none;">Cancelar</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card card-full-width">
+            <h3>Usuários Cadastrados</h3>
+            <div class="table-wrapper">
+              <table id="usuarios-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Usuário</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th style="width: 100px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Empresa -->
+  <div id="empresa-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🏢 Empresa</h3>
+        <button class="modal-close" onclick="closeEmpresaModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-menu">
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('empresa-cadastrar'); closeEmpresaModal(); return false;">
+              <div class="modal-menu-icon">➕</div>
+              <div class="modal-menu-text">
+                <h4>Cadastrar Empresa</h4>
+                <p>Adicionar nova empresa</p>
+              </div>
+            </a>
+          </li>
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('empresa-listar'); closeEmpresaModal(); return false;">
+              <div class="modal-menu-icon">📋</div>
+              <div class="modal-menu-text">
+                <h4>Listar Empresas</h4>
+                <p>Ver todas as empresas cadastradas</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Clientes -->
+  <div id="clientes-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>👥 Clientes</h3>
+        <button class="modal-close" onclick="closeClientesModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-menu">
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('clientes-cadastrar'); closeClientesModal(); return false;">
+              <div class="modal-menu-icon">➕</div>
+              <div class="modal-menu-text">
+                <h4>Cadastrar Cliente</h4>
+                <p>Adicionar um novo cliente ao sistema</p>
+              </div>
+            </a>
+          </li>
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('clientes-listar'); closeClientesModal(); return false;">
+              <div class="modal-menu-icon">📋</div>
+              <div class="modal-menu-text">
+                <h4>Listar Clientes</h4>
+                <p>Ver todos os clientes cadastrados</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Faturas -->
+  <div id="faturas-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📄 Faturas</h3>
+        <button class="modal-close" onclick="closeFaturasModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ul class="modal-menu">
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('faturas-cadastrar'); closeFaturasModal(); return false;">
+              <div class="modal-menu-icon">➕</div>
+              <div class="modal-menu-text">
+                <h4>Cadastrar Fatura</h4>
+                <p>Criar uma nova fatura manualmente</p>
+              </div>
+            </a>
+          </li>
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('faturas-listar'); closeFaturasModal(); return false;">
+              <div class="modal-menu-icon">📋</div>
+              <div class="modal-menu-text">
+                <h4>Listar Faturas</h4>
+                <p>Ver todas as faturas cadastradas</p>
+              </div>
+            </a>
+          </li>
+          <li class="modal-menu-item">
+            <a href="#" onclick="router.navigate('faturas-upload'); closeFaturasModal(); return false;">
+              <div class="modal-menu-icon">📤</div>
+              <div class="modal-menu-text">
+                <h4>Upload de Faturas</h4>
+                <p>Enviar arquivos PDF ou CSV</p>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Fatura -->
+  <div id="editar-fatura-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ Editar Fatura</h3>
+        <button class="modal-close" onclick="Faturas.closeEditModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-editar-fatura" onsubmit="Faturas.submitEdit(event)">
+          <input type="hidden" id="edit-fatura-id">
+          
+          <div class="form-group">
+            <label>Cliente *</label>
+            <select id="edit-cliente-id" required>
+              <option value="">Selecione um cliente</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Número da Fatura *</label>
+            <input type="text" id="edit-numero-fatura" required>
+          </div>
+
+          <div class="form-group">
+            <label>Valor (R$) *</label>
+            <input type="number" id="edit-valor" step="0.01" required>
+          </div>
+
+          <div class="form-group">
+            <label>Data de Vencimento *</label>
+            <input type="date" id="edit-data-vencimento" required>
+          </div>
+
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="edit-status" required>
+              <option value="pendente">Pendente</option>
+              <option value="pago">Pago</option>
+              <option value="vencido">Vencido</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="Faturas.closeEditModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/modules/dashboard.js"></script>
+  <script src="js/modules/empresa.js"></script>
+  <script src="js/modules/clientes.js"></script>
+  <script src="js/modules/faturas.js"></script>
+  <script src="js/modules/consultar-prazo.js"></script>
+  <script src="js/modules/usuarios.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/modules/auth.js"></script>
+</body>
+</html>

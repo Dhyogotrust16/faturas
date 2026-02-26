@@ -64,7 +64,17 @@ class Router {
   navigate(routeName) {
     console.log(`[Router] Navegando para: ${routeName}`);
     
-    const route = this.routes[routeName];
+    // Extrair rota base e parâmetros (ex: empresa-editar/5 -> empresa-editar)
+    let routeBase = routeName;
+    let routeParams = null;
+    
+    if (routeName.includes('/')) {
+      const parts = routeName.split('/');
+      routeBase = parts[0];
+      routeParams = parts.slice(1);
+    }
+    
+    const route = this.routes[routeBase];
     if (!route) {
       console.error(`[Router] Rota não encontrada: ${routeName}`);
       Utils.showNotification(`Página não encontrada: ${routeName}`, 'error');
@@ -72,7 +82,7 @@ class Router {
     }
 
     // Verificar se é rota de usuários e se o usuário é admin
-    if (routeName === 'usuarios') {
+    if (routeBase === 'usuarios') {
       const isAdmin = localStorage.getItem('is_admin');
       if (isAdmin !== '1' && isAdmin !== 1) {
         console.warn('[Router] Acesso negado à página de usuários');
@@ -117,7 +127,7 @@ class Router {
     // Executar callback de carregamento
     if (route.onLoad) {
       try {
-        route.onLoad();
+        route.onLoad(routeParams);
       } catch (error) {
         console.error(`[Router] Erro no onLoad:`, error);
         Utils.showNotification('Erro ao carregar conteúdo da página', 'error');
@@ -133,20 +143,31 @@ class Router {
     // Verificar se há hash na URL
     const hash = window.location.hash.substring(1); // Remove o #
     
-    if (hash && this.routes[hash]) {
-      console.log(`[Router] Restaurando rota do hash: ${hash}`);
-      this.navigate(hash);
+    if (hash) {
+      // Extrair rota base para verificação
+      const routeBase = hash.includes('/') ? hash.split('/')[0] : hash;
+      
+      if (this.routes[routeBase]) {
+        console.log(`[Router] Restaurando rota do hash: ${hash}`);
+        this.navigate(hash);
+      } else {
+        console.log('[Router] Hash inválido, navegando para dashboard');
+        this.navigate('dashboard');
+      }
     } else {
-      console.log('[Router] Nenhum hash válido, navegando para dashboard');
+      console.log('[Router] Nenhum hash, navegando para dashboard');
       this.navigate('dashboard');
     }
 
     // Listener para mudanças no hash
     window.addEventListener('hashchange', () => {
       const newHash = window.location.hash.substring(1);
-      if (newHash && this.routes[newHash] && newHash !== this.currentRoute) {
-        console.log(`[Router] Hash mudou para: ${newHash}`);
-        this.navigate(newHash);
+      if (newHash && newHash !== this.currentRoute) {
+        const newRouteBase = newHash.includes('/') ? newHash.split('/')[0] : newHash;
+        if (this.routes[newRouteBase]) {
+          console.log(`[Router] Hash mudou para: ${newHash}`);
+          this.navigate(newHash);
+        }
       }
     });
   }

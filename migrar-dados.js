@@ -61,6 +61,58 @@ async function login() {
   console.log('✅ Login realizado com sucesso\n');
 }
 
+async function migrarEmpresas(db) {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT * FROM empresa', async (err, empresas) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      
+      console.log(`🏢 Migrando ${empresas.length} empresas...`);
+      let sucesso = 0;
+      let erros = 0;
+      
+      for (const empresa of empresas) {
+        try {
+          const res = await httpRequest(`${API_URL}/empresa`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              nome: empresa.nome,
+              razao_social: empresa.razao_social,
+              cnpj: empresa.cnpj,
+              inscricao_estadual: empresa.inscricao_estadual,
+              endereco: empresa.endereco,
+              telefone: empresa.telefone,
+              email: empresa.email
+            })
+          });
+          
+          if (res.ok) {
+            sucesso++;
+          } else {
+            const error = res.text();
+            if (!error.includes('já existe') && !error.includes('já cadastrada')) {
+              console.log(`   ⚠️  ${empresa.nome}: ${error}`);
+            }
+            erros++;
+          }
+        } catch (error) {
+          console.log(`   ❌ Erro ao migrar ${empresa.nome}:`, error.message);
+          erros++;
+        }
+      }
+      
+      console.log(`✅ Empresas: ${sucesso} migradas, ${erros} erros\n`);
+      resolve();
+    });
+  });
+}
+
 async function migrarClientes(db) {
   return new Promise((resolve, reject) => {
     db.all('SELECT * FROM clientes', async (err, clientes) => {
@@ -181,6 +233,7 @@ async function migrar() {
   
   try {
     await login();
+    await migrarEmpresas(db);
     await migrarClientes(db);
     await migrarFaturas(db);
     

@@ -1,7 +1,21 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const db = new sqlite3.Database(path.join(__dirname, '../database/faturas.db'));
+// Usar volume montado no Fly.io se disponível, senão usar local
+const dbDir = process.env.NODE_ENV === 'production' && fs.existsSync('/app/data') 
+  ? '/app/data' 
+  : path.join(__dirname, '../database');
+
+// Criar diretório se não existir
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const dbPath = path.join(dbDir, 'faturas.db');
+console.log('📁 Banco de dados:', dbPath);
+
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
   // Tabela de usuários

@@ -1,26 +1,30 @@
-# fly.toml app configuration file
-app = "visao-faturas"
-primary_region = "gru"
+# fly.toml app configuration file generated for visao-faturas on 2026-02-25T23:33:30-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'visao-faturas'
+primary_region = 'gru'
 
 [build]
 
 [env]
-  PORT = "8080"
-  NODE_ENV = "production"
+  NODE_ENV = 'production'
+  PORT = '8080'
+
+[[mounts]]
+  source = 'visao_data'
+  destination = '/app/data'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
-  processes = ["app"]
+  processes = ['app']
 
 [[vm]]
-  cpu_kind = "shared"
+  memory = '256mb'
   cpus = 1
   memory_mb = 256
-
-[mounts]
-  source = "visao_data"
-  destination = "/app/data"

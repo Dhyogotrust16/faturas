@@ -865,6 +865,59 @@ table td {
   }
 }
 
+/* Dashboard Charts */
+.dashboard-charts {
+  margin-top: 32px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.chart-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--light);
+}
+
+.chart-card canvas {
+  max-height: 300px;
+}
+
+@media (max-width: 1024px) {
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-card {
+    padding: 16px;
+  }
+  
+  .chart-card h3 {
+    font-size: 14px;
+  }
+  
+  .chart-card canvas {
+    max-height: 250px;
+  }
+}
+
 /* File Upload */
 .file-upload {
   border: 2px dashed var(--border);

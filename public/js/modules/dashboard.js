@@ -41,9 +41,10 @@ const Dashboard = {
   
   async loadData() {
     try {
-      const [clientes, todasFaturas] = await Promise.all([
+      const [clientes, todasFaturas, empresas] = await Promise.all([
         api.getClientes(),
-        api.getFaturas()
+        api.getFaturas(),
+        api.getEmpresas()
       ]);
       
       // Filtrar faturas por empresa se selecionada
@@ -59,7 +60,7 @@ const Dashboard = {
       };
 
       this.render(stats);
-      this.renderCharts(faturas, clientes);
+      this.renderCharts(faturas, clientes, empresas);
     } catch (error) {
       Utils.showNotification('Erro ao carregar dados', 'error');
       console.error(error);
@@ -73,11 +74,11 @@ const Dashboard = {
     document.getElementById('stat-vencidas').textContent = stats.vencidas;
   },
   
-  renderCharts(faturas, clientes) {
+  renderCharts(faturas, clientes, empresas) {
     this.renderStatusChart(faturas);
-    this.renderValorStatusChart(faturas);
+    this.renderPostosVencidasChart(faturas, empresas);
     this.renderMesChart(faturas);
-    this.renderClientesChart(faturas, clientes);
+    this.renderValorPostoChart(faturas, empresas);
   },
   
   renderStatusChart(faturas) {
@@ -116,45 +117,66 @@ const Dashboard = {
     });
   },
   
-  renderValorStatusChart(faturas) {
-    const ctx = document.getElementById('chart-valor-status');
+  renderPostosVencidasChart(faturas, empresas) {
+    const ctx = document.getElementById('chart-postos-vencidas');
     if (!ctx) return;
     
-    const valorStatus = {
-      'pendente': faturas.filter(f => f.status === 'pendente').reduce((sum, f) => sum + parseFloat(f.valor || 0), 0),
-      'pago': faturas.filter(f => f.status === 'pago').reduce((sum, f) => sum + parseFloat(f.valor || 0), 0),
-      'vencido': faturas.filter(f => f.status === 'vencido').reduce((sum, f) => sum + parseFloat(f.valor || 0), 0)
-    };
+    // Contar faturas vencidas por posto
+    const postoVencidas = {};
+    const faturasVencidas = faturas.filter(f => f.status === 'vencido');
     
-    if (this.charts.valorStatus) {
-      this.charts.valorStatus.destroy();
+    faturasVencidas.forEach(f => {
+      const empresa = empresas.find(e => e.id === f.empresa_id);
+      if (empresa) {
+        const nome = empresa.nome;
+        if (!postoVencidas[nome]) {
+          postoVencidas[nome] = { count: 0, valor: 0 };
+        }
+        postoVencidas[nome].count++;
+        postoVencidas[nome].valor += parseFloat(f.valor || 0);
+      }
+    });
+    
+    // Ordenar por quantidade
+    const postosOrdenados = Object.entries(postoVencidas)
+      .sort((a, b) => b[1].count - a[1].count);
+    
+    if (this.charts.postosVencidas) {
+      this.charts.postosVencidas.destroy();
     }
     
-    this.charts.valorStatus = new Chart(ctx, {
+    this.charts.postosVencidas = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Pendente', 'Pago', 'Vencido'],
+        labels: postosOrdenados.map(([nome]) => nome.length > 15 ? nome.substring(0, 15) + '...' : nome),
         datasets: [{
-          label: 'Valor Total (R$)',
-          data: [valorStatus.pendente, valorStatus.pago, valorStatus.vencido],
-          backgroundColor: ['#FF9800', '#10b981', '#ef4444']
+          label: 'Faturas Vencidas',
+          data: postosOrdenados.map(([, data]) => data.count),
+          backgroundColor: '#ef4444'
         }]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: true,
         plugins: {
           legend: {
             display: false
+          },
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                const posto = postosOrdenados[context.dataIndex];
+                return 'Valor: R$ ' + posto[1].valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+              }
+            }
           }
         },
         scales: {
-          y: {
+          x: {
             beginAtZero: true,
             ticks: {
-              callback: function(value) {
-                return 'R$ ' + value.toLocaleString('pt-BR');
-              }
+              stepSize: 1
             }
           }
         }
@@ -166,12 +188,16 @@ const Dashboard = {
     const ctx = document.getElementById('chart-mes');
     if (!ctx) return;
     
-    // Agrupar por mês
+    // Agrupar por mês e status
     const meses = {};
     faturas.forEach(f => {
       const data = new Date(f.data_vencimento);
-      const mesAno = `${data.getMonth() + 1}/${data.getFullYear()}`;
-      meses[mesAno] = (meses[mesAno] || 0) + 1;
+      const mesAno = `${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()}`;
+      
+      if (!meses[mesAno]) {
+        meses[mesAno] = { pendente: 0, pago: 0, vencido: 0 };
+      }
+      meses[mesAno][f.status]++;
     });
     
     // Ordenar por data
@@ -192,21 +218,39 @@ const Dashboard = {
       type: 'line',
       data: {
         labels: ultimos6Meses,
-        datasets: [{
-          label: 'Faturas',
-          data: ultimos6Meses.map(m => meses[m]),
-          borderColor: '#1B5E3E',
-          backgroundColor: 'rgba(27, 94, 62, 0.1)',
-          tension: 0.4,
-          fill: true
-        }]
+        datasets: [
+          {
+            label: 'Pago',
+            data: ultimos6Meses.map(m => meses[m].pago),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Pendente',
+            data: ultimos6Meses.map(m => meses[m].pendente),
+            borderColor: '#FF9800',
+            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Vencido',
+            data: ultimos6Meses.map(m => meses[m].vencido),
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            tension: 0.4,
+            fill: true
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
         plugins: {
           legend: {
-            display: false
+            position: 'bottom'
           }
         },
         scales: {
@@ -221,53 +265,60 @@ const Dashboard = {
     });
   },
   
-  renderClientesChart(faturas, clientes) {
-    const ctx = document.getElementById('chart-clientes');
+  renderValorPostoChart(faturas, empresas) {
+    const ctx = document.getElementById('chart-valor-posto');
     if (!ctx) return;
     
-    // Contar faturas por cliente
-    const clienteCount = {};
+    // Calcular valor total por posto
+    const postoValor = {};
     faturas.forEach(f => {
-      const cliente = clientes.find(c => c.id === f.cliente_id);
-      if (cliente) {
-        const nome = cliente.nome;
-        clienteCount[nome] = (clienteCount[nome] || 0) + 1;
+      const empresa = empresas.find(e => e.id === f.empresa_id);
+      if (empresa) {
+        const nome = empresa.nome;
+        postoValor[nome] = (postoValor[nome] || 0) + parseFloat(f.valor || 0);
       }
     });
     
-    // Ordenar e pegar top 10
-    const top10 = Object.entries(clienteCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
+    // Ordenar por valor
+    const postosOrdenados = Object.entries(postoValor)
+      .sort((a, b) => b[1] - a[1]);
     
-    if (this.charts.clientes) {
-      this.charts.clientes.destroy();
+    if (this.charts.valorPosto) {
+      this.charts.valorPosto.destroy();
     }
     
-    this.charts.clientes = new Chart(ctx, {
+    this.charts.valorPosto = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: top10.map(([nome]) => nome.length > 20 ? nome.substring(0, 20) + '...' : nome),
+        labels: postosOrdenados.map(([nome]) => nome.length > 15 ? nome.substring(0, 15) + '...' : nome),
         datasets: [{
-          label: 'Faturas',
-          data: top10.map(([, count]) => count),
-          backgroundColor: '#FF9800'
+          label: 'Valor Total (R$)',
+          data: postosOrdenados.map(([, valor]) => valor),
+          backgroundColor: '#1B5E3E'
         }]
       },
       options: {
-        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: true,
         plugins: {
           legend: {
             display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+              }
+            }
           }
         },
         scales: {
-          x: {
+          y: {
             beginAtZero: true,
             ticks: {
-              stepSize: 1
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
             }
           }
         }

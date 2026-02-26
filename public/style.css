@@ -541,6 +541,10 @@ table td {
     display: block !important;
   }
   
+  .btn-logout-mobile {
+    display: block !important;
+  }
+  
   .nav-content {
     padding: 12px 20px;
   }
@@ -1413,6 +1417,10 @@ table td {
   display: flex;
 }
 
+.btn-logout-mobile {
+  display: none;
+}
+
 /* Mobile Extra Small */
 @media (max-width: 480px) {
   .page {
@@ -1450,6 +1458,10 @@ table td {
   }
   
   .user-name {
+    display: block !important;
+  }
+  
+  .btn-logout-mobile {
     display: block !important;
   }
   

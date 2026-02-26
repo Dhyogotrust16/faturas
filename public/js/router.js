@@ -92,6 +92,9 @@ class Router {
       }
     }
 
+    // Salvar última rota no localStorage
+    localStorage.setItem('lastRoute', routeName);
+    
     // Atualizar URL com hash
     window.location.hash = routeName;
 
@@ -141,21 +144,30 @@ class Router {
     console.log('Router.init() chamado');
     
     // Verificar se há hash na URL
-    const hash = window.location.hash.substring(1); // Remove o #
+    let hash = window.location.hash.substring(1); // Remove o #
+    
+    // Se não houver hash, tentar restaurar última rota do localStorage
+    if (!hash) {
+      const lastRoute = localStorage.getItem('lastRoute');
+      if (lastRoute && lastRoute !== 'dashboard') {
+        hash = lastRoute;
+        console.log(`[Router] Restaurando última rota do localStorage: ${hash}`);
+      }
+    }
     
     if (hash) {
       // Extrair rota base para verificação
       const routeBase = hash.includes('/') ? hash.split('/')[0] : hash;
       
       if (this.routes[routeBase]) {
-        console.log(`[Router] Restaurando rota do hash: ${hash}`);
+        console.log(`[Router] Restaurando rota: ${hash}`);
         this.navigate(hash);
       } else {
         console.log('[Router] Hash inválido, navegando para dashboard');
         this.navigate('dashboard');
       }
     } else {
-      console.log('[Router] Nenhum hash, navegando para dashboard');
+      console.log('[Router] Nenhuma rota salva, navegando para dashboard');
       this.navigate('dashboard');
     }
 

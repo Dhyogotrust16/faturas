@@ -2,15 +2,18 @@
 const ConsultarPrazo = {
   faturas: [],
   clientes: [],
+  empresas: [],
   filtros: {},
 
   async load() {
     try {
-      [this.faturas, this.clientes] = await Promise.all([
+      [this.faturas, this.clientes, this.empresas] = await Promise.all([
         api.getFaturas(),
-        api.getClientes()
+        api.getClientes(),
+        api.getEmpresas()
       ]);
       
+      this.loadEmpresasSelect();
       this.aplicarFiltros();
       
       // Event listener para busca em tempo real
@@ -23,10 +26,18 @@ const ConsultarPrazo = {
     }
   },
 
+  loadEmpresasSelect() {
+    const select = document.getElementById('filtro-empresa');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Todas</option>' +
+      this.empresas.map(e => `<option value="${e.id}">${e.nome}</option>`).join('');
+  },
+
   aplicarFiltros() {
     this.filtros = {
       cliente: document.getElementById('filtro-cliente')?.value.toLowerCase().trim(),
-      status: document.getElementById('filtro-status')?.value,
+      empresa: document.getElementById('filtro-empresa')?.value,
       periodo: document.getElementById('filtro-periodo')?.value
     };
 
@@ -46,9 +57,9 @@ const ConsultarPrazo = {
       });
     }
 
-    // Filtro por status
-    if (this.filtros.status) {
-      faturasFiltradas = faturasFiltradas.filter(f => f.status === this.filtros.status);
+    // Filtro por empresa
+    if (this.filtros.empresa) {
+      faturasFiltradas = faturasFiltradas.filter(f => f.empresa_id == this.filtros.empresa);
     }
 
     // Filtro por período

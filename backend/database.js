@@ -25,6 +25,7 @@ db.serialize(() => {
     usuario TEXT UNIQUE NOT NULL,
     email TEXT,
     senha TEXT NOT NULL,
+    is_admin INTEGER DEFAULT 0,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -32,12 +33,22 @@ db.serialize(() => {
   db.all(`PRAGMA table_info(usuarios)`, (err, columns) => {
     if (!err && columns) {
       const hasUsuario = columns.some(col => col.name === 'usuario');
+      const hasIsAdmin = columns.some(col => col.name === 'is_admin');
+      
       if (!hasUsuario) {
         db.run(`ALTER TABLE usuarios ADD COLUMN usuario TEXT`, (err) => {
           if (!err) {
-            console.log('Coluna usuario adicionada com sucesso');
+            console.log('✅ Coluna usuario adicionada com sucesso');
             // Copiar email para usuario para usuários existentes
             db.run(`UPDATE usuarios SET usuario = email WHERE usuario IS NULL`);
+          }
+        });
+      }
+      
+      if (!hasIsAdmin) {
+        db.run(`ALTER TABLE usuarios ADD COLUMN is_admin INTEGER DEFAULT 0`, (err) => {
+          if (!err) {
+            console.log('✅ Coluna is_admin adicionada com sucesso');
           }
         });
       }

@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const db = require('./database');
+const seedDatabase = require('./seed');
 const authRoutes = require('./routes/auth');
 const clientesRoutes = require('./routes/clientes');
 const faturasRoutes = require('./routes/faturas');
@@ -53,7 +54,15 @@ atualizarFaturasVencidas();
 // Executar atualização a cada 1 hora (3600000 ms)
 setInterval(atualizarFaturasVencidas, 3600000);
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`Auto-atualização de status ativada (verifica a cada 1 hora)`);
-});
+// Inicializar banco de dados e criar usuário admin se necessário
+seedDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando na porta ${PORT}`);
+      console.log(`⏰ Auto-atualização de status ativada (verifica a cada 1 hora)`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Erro ao inicializar banco de dados:', err);
+    process.exit(1);
+  });

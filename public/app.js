@@ -1,6 +1,35 @@
 const API_URL = 'http://localhost:5000/api';
 let token = localStorage.getItem('token');
 
+// Funções do Menu Mobile
+function toggleMenu() {
+  const navLinks = document.getElementById('nav-links');
+  const overlay = document.getElementById('nav-overlay');
+  navLinks.classList.toggle('active');
+  overlay.classList.toggle('active');
+}
+
+function closeMenu() {
+  const navLinks = document.getElementById('nav-links');
+  const overlay = document.getElementById('nav-overlay');
+  navLinks.classList.remove('active');
+  overlay.classList.remove('active');
+}
+
+// Event listeners para o menu mobile
+document.addEventListener('DOMContentLoaded', () => {
+  const menuToggle = document.getElementById('menu-toggle');
+  const overlay = document.getElementById('nav-overlay');
+  
+  if (menuToggle) {
+    menuToggle.addEventListener('click', toggleMenu);
+  }
+  
+  if (overlay) {
+    overlay.addEventListener('click', closeMenu);
+  }
+});
+
 // Função para mostrar notificações
 function showNotification(message, type = 'success') {
   const notification = document.createElement('div');

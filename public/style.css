@@ -528,6 +528,64 @@ table td {
     max-width: 150px !important;
   }
   
+  /* Menu hamburguer para tablets */
+  .menu-toggle {
+    display: block;
+  }
+  
+  .user-info-desktop {
+    display: none !important;
+  }
+  
+  .user-name {
+    display: block !important;
+  }
+  
+  .nav-content {
+    padding: 12px 20px;
+  }
+  
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    height: 100vh;
+    background: white;
+    flex-direction: column;
+    padding: 80px 24px 24px;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    gap: 8px;
+  }
+  
+  .nav-links.active {
+    right: 0;
+  }
+  
+  .nav-links a {
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+  }
+  
+  .btn-logout {
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .user-name {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    background: var(--light);
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+  
   table {
     font-size: 13px;
   }
@@ -548,7 +606,7 @@ table td {
   }
   
   .stats {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px;
   }
   
@@ -560,8 +618,22 @@ table td {
     font-size: 16px;
   }
   
-  .nav-content {
-    padding: 12px 16px;
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .filtros-inline {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .section-header .btn {
+    width: 100%;
   }
 }
 
@@ -1306,6 +1378,41 @@ table td {
 }
 
 
+/* Menu Hamburguer Mobile */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 8px;
+  z-index: 1001;
+}
+
+.nav-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.nav-overlay.active {
+  display: block;
+}
+
+.user-name {
+  display: none;
+}
+
+.user-info-desktop {
+  display: flex;
+}
+
 /* Mobile Extra Small */
 @media (max-width: 480px) {
   .page {
@@ -1333,9 +1440,27 @@ table td {
     font-size: 16px; /* Evita zoom no iOS */
   }
   
+  /* Menu hamburguer */
+  .menu-toggle {
+    display: block;
+  }
+  
+  .user-info-desktop {
+    display: none !important;
+  }
+  
+  .user-name {
+    display: block !important;
+  }
+  
+  .nav-content {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  
   .nav-brand {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
     gap: 8px;
   }
   
@@ -1348,16 +1473,50 @@ table td {
   }
   
   .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: white;
     flex-direction: column;
-    width: 100%;
+    padding: 80px 20px 20px;
+    box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    gap: 8px;
+  }
+  
+  .nav-links.active {
+    right: 0;
   }
   
   .nav-links a {
     width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+  
+  .btn-logout {
+    width: 100%;
     text-align: center;
+    margin-top: 20px;
+  }
+  
+  .user-name {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    background: var(--light);
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
   }
   
   .stats {
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px;
   }
   
@@ -1365,17 +1524,32 @@ table td {
     padding: 16px;
   }
   
+  .stat-card h3 {
+    font-size: 11px;
+  }
+  
   .stat-number {
     font-size: 28px;
   }
   
   table {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   table th,
   table td {
     padding: 8px 4px;
+  }
+  
+  .table-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .table-actions .btn-sm {
+    width: 100%;
+    font-size: 11px;
+    padding: 6px 8px;
   }
   
   .section-header {
@@ -1385,6 +1559,32 @@ table td {
   
   .section-header h1 {
     font-size: 20px;
+  }
+  
+  .section-header .btn {
+    width: 100%;
+  }
+  
+  .card {
+    padding: 16px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .filtros-inline {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: 95%;
+  }
+  
+  .modal-header,
+  .modal-body {
+    padding: 16px;
   }
 }
 

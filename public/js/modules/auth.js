@@ -55,10 +55,19 @@ const Auth = {
     
     // Mostrar nome do usuário logado (apenas primeiro nome)
     const usuarioNome = localStorage.getItem('usuario_nome');
+    const primeiroNome = usuarioNome ? usuarioNome.split(' ')[0] : 'Usuário';
+    
+    // Atualizar nome no desktop
     const usuarioLogadoEl = document.getElementById('usuario-logado');
-    if (usuarioLogadoEl && usuarioNome) {
-      const primeiroNome = usuarioNome.split(' ')[0];
+    if (usuarioLogadoEl) {
       usuarioLogadoEl.textContent = `👤 ${primeiroNome}`;
+    }
+    
+    // Atualizar nome no mobile
+    const usuarioLogadoMobileEl = document.getElementById('usuario-logado-mobile');
+    if (usuarioLogadoMobileEl) {
+      usuarioLogadoMobileEl.textContent = `👤 ${primeiroNome}`;
+      usuarioLogadoMobileEl.classList.remove('hidden');
     }
     
     // Mostrar menu de usuários apenas para admins

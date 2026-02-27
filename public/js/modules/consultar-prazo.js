@@ -22,22 +22,28 @@ const ConsultarPrazo = {
   },
 
   setupEventListeners() {
-    // Event listener para busca em tempo real
     const inputCliente = document.getElementById('filtro-cliente');
-    if (inputCliente) {
-      inputCliente.addEventListener('input', () => this.aplicarFiltros());
-    }
-
-    // Event listener para filtro de empresa
     const selectEmpresa = document.getElementById('filtro-empresa');
-    if (selectEmpresa) {
-      selectEmpresa.addEventListener('change', () => this.aplicarFiltros());
+    const selectPeriodo = document.getElementById('filtro-periodo');
+
+    // Debounce para o campo de pesquisa (aguarda 300ms após parar de digitar)
+    if (inputCliente) {
+      inputCliente.addEventListener('input', Utils.debounce(() => {
+        this.aplicarFiltros();
+      }, 300));
     }
 
-    // Event listener para filtro de período
-    const selectPeriodo = document.getElementById('filtro-periodo');
+    // Filtro imediato para os selects
+    if (selectEmpresa) {
+      selectEmpresa.addEventListener('change', () => {
+        this.aplicarFiltros();
+      });
+    }
+
     if (selectPeriodo) {
-      selectPeriodo.addEventListener('change', () => this.aplicarFiltros());
+      selectPeriodo.addEventListener('change', () => {
+        this.aplicarFiltros();
+      });
     }
   },
 

@@ -443,6 +443,7 @@ const Faturas = {
   },
 
   async toggleStatus(id, currentStatus) {
+    alert('toggleStatus chamado! ID: ' + id + ', Status: ' + currentStatus);
     console.log('[Faturas] toggleStatus chamado:', id, currentStatus);
     
     // Se está marcando como pago, abrir modal de pagamento

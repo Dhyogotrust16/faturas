@@ -1143,7 +1143,7 @@ table td {
   border-radius: 16px;
   padding: 0;
   width: 90%;
-  max-width: 500px;
+  max-width: 400px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
   overflow: hidden;

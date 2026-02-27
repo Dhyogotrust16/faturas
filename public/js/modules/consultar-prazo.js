@@ -14,8 +14,12 @@ const ConsultarPrazo = {
       ]);
       
       this.loadEmpresasSelect();
-      this.setupEventListeners();
       this.aplicarFiltros();
+      
+      // Configurar listeners após um pequeno delay para garantir que o DOM está pronto
+      setTimeout(() => {
+        this.setupEventListeners();
+      }, 100);
     } catch (error) {
       Utils.showNotification('Erro ao carregar faturas', 'error');
     }
@@ -31,13 +35,27 @@ const ConsultarPrazo = {
     console.log('[ConsultarPrazo] Select empresa encontrado:', !!selectEmpresa);
     console.log('[ConsultarPrazo] Select período encontrado:', !!selectPeriodo);
 
-    // Debounce para o campo de pesquisa (aguarda 300ms após parar de digitar)
+    // Configurar filtro de busca com debounce manual (igual ao módulo Clientes)
     if (inputCliente) {
-      inputCliente.addEventListener('input', Utils.debounce(() => {
-        console.log('[ConsultarPrazo] Input detectado, aplicando filtros...');
-        this.aplicarFiltros();
-      }, 300));
+      // Remover listeners antigos se existirem
+      if (this._handleInput) {
+        inputCliente.removeEventListener('input', this._handleInput);
+      }
+      
+      // Criar função bound para poder remover depois
+      this._handleInput = (e) => {
+        console.log('[ConsultarPrazo] Input detectado:', e.target.value);
+        // Aplicar com debounce
+        clearTimeout(this._debounceTimer);
+        this._debounceTimer = setTimeout(() => {
+          this.aplicarFiltros();
+        }, 300);
+      };
+      
+      inputCliente.addEventListener('input', this._handleInput);
       console.log('[ConsultarPrazo] Event listener adicionado ao input cliente');
+    } else {
+      console.error('[ConsultarPrazo] Campo de pesquisa NÃO encontrado!');
     }
 
     // Filtro imediato para os selects

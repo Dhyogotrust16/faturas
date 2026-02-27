@@ -78,6 +78,13 @@ MUDANÇAS IMPLEMENTADAS
    - Substituído filtro de Status por filtro de Empresa
    - Dropdown com todas as empresas cadastradas
 
+✅ Filtros Automáticos
+   - Removido botão "Aplicar Filtros"
+   - Filtros aplicados automaticamente ao digitar ou selecionar
+   - Busca por cliente em tempo real
+   - Filtro de empresa automático
+   - Filtro de período automático
+
 
 =================================================================
 STATUS

@@ -6,12 +6,23 @@ const ConsultarPrazo = {
   filtros: {},
 
   async load() {
+    console.log('[ConsultarPrazo] Iniciando carregamento...');
     try {
       [this.faturas, this.clientes, this.empresas] = await Promise.all([
         api.getFaturas(),
         api.getClientes(),
         api.getEmpresas()
       ]);
+      
+      console.log('[ConsultarPrazo] Dados carregados:');
+      console.log('[ConsultarPrazo] - Faturas:', this.faturas.length);
+      console.log('[ConsultarPrazo] - Clientes:', this.clientes.length);
+      console.log('[ConsultarPrazo] - Empresas:', this.empresas.length);
+      
+      // Verificar se faturas têm cliente_nome
+      if (this.faturas.length > 0) {
+        console.log('[ConsultarPrazo] Exemplo de fatura:', this.faturas[0]);
+      }
       
       this.loadEmpresasSelect();
       this.aplicarFiltros();
@@ -21,6 +32,7 @@ const ConsultarPrazo = {
         this.setupEventListeners();
       }, 100);
     } catch (error) {
+      console.error('[ConsultarPrazo] Erro ao carregar:', error);
       Utils.showNotification('Erro ao carregar faturas', 'error');
     }
   },
@@ -85,25 +97,45 @@ const ConsultarPrazo = {
   },
 
   aplicarFiltros() {
+    const inputCliente = document.getElementById('filtro-cliente');
+    const selectEmpresa = document.getElementById('filtro-empresa');
+    const selectPeriodo = document.getElementById('filtro-periodo');
+    
     this.filtros = {
-      cliente: document.getElementById('filtro-cliente')?.value.toLowerCase().trim(),
-      empresa: document.getElementById('filtro-empresa')?.value,
-      periodo: document.getElementById('filtro-periodo')?.value
+      cliente: inputCliente ? inputCliente.value.toLowerCase().trim() : '',
+      empresa: selectEmpresa ? selectEmpresa.value : '',
+      periodo: selectPeriodo ? selectPeriodo.value : ''
     };
 
+    console.log('[ConsultarPrazo] ========================================');
     console.log('[ConsultarPrazo] Aplicando filtros:', this.filtros);
     console.log('[ConsultarPrazo] Total de faturas:', this.faturas.length);
     console.log('[ConsultarPrazo] Total de clientes:', this.clientes.length);
 
     let faturasFiltradas = [...this.faturas];
+    console.log('[ConsultarPrazo] Faturas antes dos filtros:', faturasFiltradas.length);
 
     // Filtro por cliente (nome ou CPF/CNPJ)
     if (this.filtros.cliente) {
       console.log('[ConsultarPrazo] Filtrando por cliente:', this.filtros.cliente);
+      
       faturasFiltradas = faturasFiltradas.filter(f => {
+        // Verificar se a fatura já tem cliente_nome (vem da API)
+        if (f.cliente_nome) {
+          const nomeNaFatura = (f.cliente_nome || '').toLowerCase();
+          const match = nomeNaFatura.includes(this.filtros.cliente);
+          
+          if (match) {
+            console.log('[ConsultarPrazo] ✓ Match direto na fatura:', f.cliente_nome);
+          }
+          
+          return match;
+        }
+        
+        // Fallback: buscar cliente pelo ID
         const cliente = this.clientes.find(c => c.id === f.cliente_id);
         if (!cliente) {
-          console.log('[ConsultarPrazo] Cliente não encontrado para fatura:', f.id);
+          console.log('[ConsultarPrazo] ✗ Cliente não encontrado para fatura ID:', f.id);
           return false;
         }
         
@@ -112,27 +144,30 @@ const ConsultarPrazo = {
         const busca = this.filtros.cliente.replace(/[^\d]/g, '');
         
         const matchNome = nome.includes(this.filtros.cliente);
-        const matchCPF = cpfCnpj.includes(busca);
+        const matchCPF = busca && cpfCnpj.includes(busca);
         
         if (matchNome || matchCPF) {
-          console.log('[ConsultarPrazo] Match encontrado:', cliente.nome);
+          console.log('[ConsultarPrazo] ✓ Match encontrado:', cliente.nome);
         }
         
         return matchNome || matchCPF;
       });
+      
       console.log('[ConsultarPrazo] Faturas após filtro de cliente:', faturasFiltradas.length);
     }
 
     // Filtro por empresa
     if (this.filtros.empresa) {
       console.log('[ConsultarPrazo] Filtrando por empresa:', this.filtros.empresa);
+      const antes = faturasFiltradas.length;
       faturasFiltradas = faturasFiltradas.filter(f => f.empresa_id == this.filtros.empresa);
-      console.log('[ConsultarPrazo] Faturas após filtro de empresa:', faturasFiltradas.length);
+      console.log('[ConsultarPrazo] Faturas após filtro de empresa:', faturasFiltradas.length, '(antes:', antes + ')');
     }
 
     // Filtro por período
     if (this.filtros.periodo) {
       console.log('[ConsultarPrazo] Filtrando por período:', this.filtros.periodo);
+      const antes = faturasFiltradas.length;
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
 
@@ -154,10 +189,11 @@ const ConsultarPrazo = {
           return venc < hoje && f.status === 'pendente';
         });
       }
-      console.log('[ConsultarPrazo] Faturas após filtro de período:', faturasFiltradas.length);
+      console.log('[ConsultarPrazo] Faturas após filtro de período:', faturasFiltradas.length, '(antes:', antes + ')');
     }
 
-    console.log('[ConsultarPrazo] Total de faturas filtradas:', faturasFiltradas.length);
+    console.log('[ConsultarPrazo] Total de faturas filtradas FINAL:', faturasFiltradas.length);
+    console.log('[ConsultarPrazo] ========================================');
     this.render(faturasFiltradas);
   },
 

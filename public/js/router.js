@@ -149,9 +149,11 @@ class Router {
     // Se não houver hash, tentar restaurar última rota do localStorage
     if (!hash) {
       const lastRoute = localStorage.getItem('lastRoute');
-      if (lastRoute && lastRoute !== 'dashboard') {
+      if (lastRoute) {
         hash = lastRoute;
         console.log(`[Router] Restaurando última rota do localStorage: ${hash}`);
+        // Definir o hash na URL para que fique visível
+        window.location.hash = hash;
       }
     }
     

@@ -1,0 +1,93 @@
+=================================================================
+COMANDOS PARA FAZER DEPLOY - COPIE E COLE NO POWERSHELL
+=================================================================
+
+PASSO 1: INSTALAR FLY CLI
+--------------------------
+Abra PowerShell como ADMINISTRADOR e execute:
+
+iwr https://fly.io/install.ps1 -useb | iex
+
+
+PASSO 2: FECHAR E ABRIR POWERSHELL NOVAMENTE
+---------------------------------------------
+Feche o PowerShell e abra novamente (não precisa ser administrador)
+
+
+PASSO 3: FAZER LOGIN NO FLY.IO
+-------------------------------
+fly auth login
+
+
+PASSO 4: NAVEGAR ATÉ O PROJETO
+-------------------------------
+cd "C:\Users\Central de Vendas\Desktop\ATON"
+
+
+PASSO 5: FAZER DEPLOY
+----------------------
+fly deploy
+
+
+PASSO 6: ABRIR APLICAÇÃO
+-------------------------
+fly open
+
+Ou acesse: https://visao-faturas.fly.dev/
+
+
+=================================================================
+COMANDOS ÚTEIS APÓS DEPLOY
+=================================================================
+
+Ver logs em tempo real:
+fly logs
+
+Ver status da aplicação:
+fly status
+
+Reiniciar aplicação:
+fly apps restart visao-faturas
+
+Ver informações:
+fly info
+
+
+=================================================================
+TESTAR APÓS DEPLOY
+=================================================================
+
+1. Acesse: https://visao-faturas.fly.dev/
+2. Login: daoliveira / 123456
+3. Navegue para "Consultar a Prazo"
+4. Pressione F5
+5. Deve permanecer em "Consultar a Prazo"
+6. Verifique filtro "Empresa" (deve estar presente)
+7. Verifique que filtro "Status" foi removido
+
+
+=================================================================
+MUDANÇAS IMPLEMENTADAS
+=================================================================
+
+✅ Persistência de Rota
+   - Ao recarregar (F5), permanece na mesma seção
+   - Hash na URL mostra a rota atual
+
+✅ Filtro por Empresa
+   - Substituído filtro de Status por filtro de Empresa
+   - Dropdown com todas as empresas cadastradas
+
+
+=================================================================
+STATUS
+=================================================================
+
+✅ Código implementado
+✅ Código commitado no Git
+✅ Push para GitHub realizado
+⏳ Aguardando instalação do Fly CLI
+⏳ Aguardando deploy para produção
+
+
+=================================================================

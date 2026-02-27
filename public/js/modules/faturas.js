@@ -443,8 +443,11 @@ const Faturas = {
   },
 
   async toggleStatus(id, currentStatus) {
+    console.log('[Faturas] toggleStatus chamado:', id, currentStatus);
+    
     // Se está marcando como pago, abrir modal de pagamento
     if (currentStatus !== 'pago') {
+      console.log('[Faturas] Abrindo modal de pagamento...');
       this.openPagamentoModal(id);
     } else {
       // Se está desmarcando como pago, voltar para pendente
@@ -462,11 +465,17 @@ const Faturas = {
   },
 
   openPagamentoModal(id) {
+    console.log('[Faturas] openPagamentoModal chamado:', id);
+    console.log('[Faturas] Faturas filtradas:', this.faturasFiltradas);
+    
     const fatura = this.faturasFiltradas.find(f => f.id === id);
     if (!fatura) {
+      console.error('[Faturas] Fatura não encontrada:', id);
       Utils.showNotification('Fatura não encontrada', 'error');
       return;
     }
+
+    console.log('[Faturas] Fatura encontrada:', fatura);
 
     // Preencher dados da fatura
     document.getElementById('pag-fatura-id').value = fatura.id;
@@ -486,7 +495,10 @@ const Faturas = {
     document.getElementById('pag-data').value = hoje;
     
     // Mostrar modal
-    document.getElementById('pagamento-modal').classList.add('active');
+    const modal = document.getElementById('pagamento-modal');
+    console.log('[Faturas] Modal encontrado:', !!modal);
+    modal.classList.add('active');
+    console.log('[Faturas] Modal deve estar visível agora');
   },
 
   closePagamentoModal() {

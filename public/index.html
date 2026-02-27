@@ -815,6 +815,116 @@
     </div>
   </div>
 
+  <!-- Modal Pagamento -->
+  <div id="pagamento-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>💰 Registrar Pagamento</h3>
+        <button class="modal-close" onclick="Faturas.closePagamentoModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span><strong>Cliente:</strong></span>
+            <span id="pag-cliente-nome"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span><strong>Fatura:</strong></span>
+            <span id="pag-numero-fatura"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span><strong>Valor Total:</strong></span>
+            <span id="pag-valor-total" style="color: var(--primary); font-weight: bold;"></span>
+          </div>
+        </div>
+
+        <form id="form-pagamento" onsubmit="Faturas.submitPagamento(event)">
+          <input type="hidden" id="pag-fatura-id">
+          <input type="hidden" id="pag-valor-original">
+
+          <div class="form-group">
+            <label>Tipo de Pagamento *</label>
+            <select id="pag-tipo" required onchange="Faturas.handleTipoPagamento()">
+              <option value="">Selecione...</option>
+              <option value="total">Pagamento Total</option>
+              <option value="parcial">Pagamento Parcial</option>
+              <option value="vale">Gerar Vale</option>
+              <option value="haver">Gerar Haver (Crédito)</option>
+            </select>
+          </div>
+
+          <div id="pag-campos-parcial" style="display: none;">
+            <div class="form-group">
+              <label>Valor Pago (R$) *</label>
+              <input type="number" id="pag-valor-pago" step="0.01" min="0" onchange="Faturas.calcularDesconto()">
+            </div>
+
+            <div class="form-group">
+              <label>Desconto (R$)</label>
+              <input type="number" id="pag-desconto" step="0.01" min="0" value="0" onchange="Faturas.calcularValorPago()">
+            </div>
+
+            <div style="background: #fff3cd; padding: 12px; border-radius: 8px; margin-top: 12px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Valor Original:</span>
+                <span id="pag-resumo-original"></span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Desconto:</span>
+                <span id="pag-resumo-desconto" style="color: #d32f2f;"></span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Valor Pago:</span>
+                <span id="pag-resumo-pago" style="color: #388e3c;"></span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px;">
+                <strong>Saldo Restante:</strong>
+                <strong id="pag-resumo-restante" style="color: var(--primary);"></strong>
+              </div>
+            </div>
+          </div>
+
+          <div id="pag-campos-vale" style="display: none;">
+            <div class="form-group">
+              <label>Valor do Vale (R$) *</label>
+              <input type="number" id="pag-valor-vale" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label>Observação</label>
+              <textarea id="pag-obs-vale" rows="2" placeholder="Ex: Vale combustível"></textarea>
+            </div>
+          </div>
+
+          <div id="pag-campos-haver" style="display: none;">
+            <div class="form-group">
+              <label>Valor do Haver (R$) *</label>
+              <input type="number" id="pag-valor-haver" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label>Observação</label>
+              <textarea id="pag-obs-haver" rows="2" placeholder="Ex: Crédito para próxima compra"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Data do Pagamento *</label>
+            <input type="date" id="pag-data" required>
+          </div>
+
+          <div class="form-group">
+            <label>Observações</label>
+            <textarea id="pag-observacoes" rows="3" placeholder="Observações sobre o pagamento..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="Faturas.closePagamentoModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Confirmar Pagamento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="js/utils.js"></script>
   <script src="js/api.js"></script>
   <script src="js/modules/dashboard.js"></script>

@@ -443,14 +443,154 @@ const Faturas = {
   },
 
   async toggleStatus(id, currentStatus) {
-    const newStatus = currentStatus === 'pago' ? 'pendente' : 'pago';
+    // Se está marcando como pago, abrir modal de pagamento
+    if (currentStatus !== 'pago') {
+      this.openPagamentoModal(id);
+    } else {
+      // Se está desmarcando como pago, voltar para pendente
+      if (!Utils.confirm('Deseja reverter o pagamento desta fatura?')) return;
+      
+      try {
+        await api.updateFaturaStatus(id, 'pendente');
+        Utils.showNotification('Status alterado para pendente!', 'success');
+        await this.loadListar();
+      } catch (error) {
+        Utils.showNotification('Erro ao alterar status', 'error');
+        console.error(error);
+      }
+    }
+  },
+
+  openPagamentoModal(id) {
+    const fatura = this.faturasFiltradas.find(f => f.id === id);
+    if (!fatura) {
+      Utils.showNotification('Fatura não encontrada', 'error');
+      return;
+    }
+
+    // Preencher dados da fatura
+    document.getElementById('pag-fatura-id').value = fatura.id;
+    document.getElementById('pag-cliente-nome').textContent = fatura.cliente_nome;
+    document.getElementById('pag-numero-fatura').textContent = fatura.numero_fatura;
+    document.getElementById('pag-valor-total').textContent = Utils.formatCurrency(fatura.valor);
+    document.getElementById('pag-valor-original').value = fatura.valor;
+    
+    // Definir data atual
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('pag-data').value = hoje;
+    
+    // Resetar form
+    document.getElementById('form-pagamento').reset();
+    document.getElementById('pag-fatura-id').value = fatura.id;
+    document.getElementById('pag-valor-original').value = fatura.valor;
+    document.getElementById('pag-data').value = hoje;
+    
+    // Mostrar modal
+    document.getElementById('pagamento-modal').classList.add('active');
+  },
+
+  closePagamentoModal() {
+    document.getElementById('pagamento-modal').classList.remove('active');
+    document.getElementById('form-pagamento').reset();
+    
+    // Esconder todos os campos condicionais
+    document.getElementById('pag-campos-parcial').style.display = 'none';
+    document.getElementById('pag-campos-vale').style.display = 'none';
+    document.getElementById('pag-campos-haver').style.display = 'none';
+  },
+
+  handleTipoPagamento() {
+    const tipo = document.getElementById('pag-tipo').value;
+    const valorOriginal = parseFloat(document.getElementById('pag-valor-original').value);
+    
+    // Esconder todos os campos
+    document.getElementById('pag-campos-parcial').style.display = 'none';
+    document.getElementById('pag-campos-vale').style.display = 'none';
+    document.getElementById('pag-campos-haver').style.display = 'none';
+    
+    // Mostrar campos específicos
+    if (tipo === 'parcial') {
+      document.getElementById('pag-campos-parcial').style.display = 'block';
+      document.getElementById('pag-valor-pago').value = valorOriginal;
+      document.getElementById('pag-desconto').value = 0;
+      this.calcularDesconto();
+    } else if (tipo === 'vale') {
+      document.getElementById('pag-campos-vale').style.display = 'block';
+      document.getElementById('pag-valor-vale').value = valorOriginal;
+    } else if (tipo === 'haver') {
+      document.getElementById('pag-campos-haver').style.display = 'block';
+      document.getElementById('pag-valor-haver').value = valorOriginal;
+    }
+  },
+
+  calcularDesconto() {
+    const valorOriginal = parseFloat(document.getElementById('pag-valor-original').value);
+    const valorPago = parseFloat(document.getElementById('pag-valor-pago').value) || 0;
+    const desconto = valorOriginal - valorPago;
+    
+    document.getElementById('pag-desconto').value = desconto.toFixed(2);
+    this.atualizarResumo();
+  },
+
+  calcularValorPago() {
+    const valorOriginal = parseFloat(document.getElementById('pag-valor-original').value);
+    const desconto = parseFloat(document.getElementById('pag-desconto').value) || 0;
+    const valorPago = valorOriginal - desconto;
+    
+    document.getElementById('pag-valor-pago').value = valorPago.toFixed(2);
+    this.atualizarResumo();
+  },
+
+  atualizarResumo() {
+    const valorOriginal = parseFloat(document.getElementById('pag-valor-original').value);
+    const valorPago = parseFloat(document.getElementById('pag-valor-pago').value) || 0;
+    const desconto = parseFloat(document.getElementById('pag-desconto').value) || 0;
+    const saldoRestante = valorOriginal - valorPago - desconto;
+    
+    document.getElementById('pag-resumo-original').textContent = Utils.formatCurrency(valorOriginal);
+    document.getElementById('pag-resumo-desconto').textContent = Utils.formatCurrency(desconto);
+    document.getElementById('pag-resumo-pago').textContent = Utils.formatCurrency(valorPago);
+    document.getElementById('pag-resumo-restante').textContent = Utils.formatCurrency(Math.max(0, saldoRestante));
+  },
+
+  async submitPagamento(event) {
+    event.preventDefault();
+    
+    const faturaId = document.getElementById('pag-fatura-id').value;
+    const tipo = document.getElementById('pag-tipo').value;
+    const data = document.getElementById('pag-data').value;
+    const observacoes = document.getElementById('pag-observacoes').value;
+    
+    let dadosPagamento = {
+      tipo,
+      data,
+      observacoes
+    };
+    
+    // Adicionar dados específicos por tipo
+    if (tipo === 'total') {
+      dadosPagamento.valorPago = parseFloat(document.getElementById('pag-valor-original').value);
+    } else if (tipo === 'parcial') {
+      dadosPagamento.valorPago = parseFloat(document.getElementById('pag-valor-pago').value);
+      dadosPagamento.desconto = parseFloat(document.getElementById('pag-desconto').value);
+    } else if (tipo === 'vale') {
+      dadosPagamento.valorVale = parseFloat(document.getElementById('pag-valor-vale').value);
+      dadosPagamento.observacoesVale = document.getElementById('pag-obs-vale').value;
+    } else if (tipo === 'haver') {
+      dadosPagamento.valorHaver = parseFloat(document.getElementById('pag-valor-haver').value);
+      dadosPagamento.observacoesHaver = document.getElementById('pag-obs-haver').value;
+    }
     
     try {
-      await api.updateFaturaStatus(id, newStatus);
-      Utils.showNotification(`Status alterado para ${newStatus}!`, 'success');
+      // Por enquanto, apenas marcar como pago
+      // TODO: Implementar endpoint no backend para salvar detalhes do pagamento
+      await api.updateFaturaStatus(faturaId, 'pago');
+      
+      Utils.showNotification('Pagamento registrado com sucesso!', 'success');
+      this.closePagamentoModal();
       await this.loadListar();
     } catch (error) {
-      Utils.showNotification('Erro ao alterar status', 'error');
+      Utils.showNotification('Erro ao registrar pagamento', 'error');
       console.error(error);
     }
   },

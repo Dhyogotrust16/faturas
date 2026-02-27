@@ -1656,8 +1656,8 @@ table td {
   }
   
   .modal-content {
-    width: 95%;
-    max-width: 95%;
+    width: 90%;
+    max-width: 400px;
   }
   
   .modal-header,
@@ -1994,8 +1994,8 @@ table td {
   
   /* Modais */
   .modal-content {
-    max-width: 90%;
-    padding: 20px;
+    width: 90%;
+    max-width: 350px;
   }
   
   .modal-header h3 {

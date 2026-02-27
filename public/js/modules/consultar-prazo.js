@@ -26,24 +26,35 @@ const ConsultarPrazo = {
     const selectEmpresa = document.getElementById('filtro-empresa');
     const selectPeriodo = document.getElementById('filtro-periodo');
 
+    console.log('[ConsultarPrazo] Configurando event listeners...');
+    console.log('[ConsultarPrazo] Input cliente encontrado:', !!inputCliente);
+    console.log('[ConsultarPrazo] Select empresa encontrado:', !!selectEmpresa);
+    console.log('[ConsultarPrazo] Select período encontrado:', !!selectPeriodo);
+
     // Debounce para o campo de pesquisa (aguarda 300ms após parar de digitar)
     if (inputCliente) {
       inputCliente.addEventListener('input', Utils.debounce(() => {
+        console.log('[ConsultarPrazo] Input detectado, aplicando filtros...');
         this.aplicarFiltros();
       }, 300));
+      console.log('[ConsultarPrazo] Event listener adicionado ao input cliente');
     }
 
     // Filtro imediato para os selects
     if (selectEmpresa) {
       selectEmpresa.addEventListener('change', () => {
+        console.log('[ConsultarPrazo] Empresa selecionada, aplicando filtros...');
         this.aplicarFiltros();
       });
+      console.log('[ConsultarPrazo] Event listener adicionado ao select empresa');
     }
 
     if (selectPeriodo) {
       selectPeriodo.addEventListener('change', () => {
+        console.log('[ConsultarPrazo] Período selecionado, aplicando filtros...');
         this.aplicarFiltros();
       });
+      console.log('[ConsultarPrazo] Event listener adicionado ao select período');
     }
   },
 
@@ -62,29 +73,48 @@ const ConsultarPrazo = {
       periodo: document.getElementById('filtro-periodo')?.value
     };
 
+    console.log('[ConsultarPrazo] Aplicando filtros:', this.filtros);
+    console.log('[ConsultarPrazo] Total de faturas:', this.faturas.length);
+    console.log('[ConsultarPrazo] Total de clientes:', this.clientes.length);
+
     let faturasFiltradas = [...this.faturas];
 
     // Filtro por cliente (nome ou CPF/CNPJ)
     if (this.filtros.cliente) {
+      console.log('[ConsultarPrazo] Filtrando por cliente:', this.filtros.cliente);
       faturasFiltradas = faturasFiltradas.filter(f => {
         const cliente = this.clientes.find(c => c.id === f.cliente_id);
-        if (!cliente) return false;
+        if (!cliente) {
+          console.log('[ConsultarPrazo] Cliente não encontrado para fatura:', f.id);
+          return false;
+        }
         
         const nome = (cliente.nome || '').toLowerCase();
         const cpfCnpj = (cliente.cpf_cnpj || '').replace(/[^\d]/g, '');
         const busca = this.filtros.cliente.replace(/[^\d]/g, '');
         
-        return nome.includes(this.filtros.cliente) || cpfCnpj.includes(busca);
+        const matchNome = nome.includes(this.filtros.cliente);
+        const matchCPF = cpfCnpj.includes(busca);
+        
+        if (matchNome || matchCPF) {
+          console.log('[ConsultarPrazo] Match encontrado:', cliente.nome);
+        }
+        
+        return matchNome || matchCPF;
       });
+      console.log('[ConsultarPrazo] Faturas após filtro de cliente:', faturasFiltradas.length);
     }
 
     // Filtro por empresa
     if (this.filtros.empresa) {
+      console.log('[ConsultarPrazo] Filtrando por empresa:', this.filtros.empresa);
       faturasFiltradas = faturasFiltradas.filter(f => f.empresa_id == this.filtros.empresa);
+      console.log('[ConsultarPrazo] Faturas após filtro de empresa:', faturasFiltradas.length);
     }
 
     // Filtro por período
     if (this.filtros.periodo) {
+      console.log('[ConsultarPrazo] Filtrando por período:', this.filtros.periodo);
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
 
@@ -106,8 +136,10 @@ const ConsultarPrazo = {
           return venc < hoje && f.status === 'pendente';
         });
       }
+      console.log('[ConsultarPrazo] Faturas após filtro de período:', faturasFiltradas.length);
     }
 
+    console.log('[ConsultarPrazo] Total de faturas filtradas:', faturasFiltradas.length);
     this.render(faturasFiltradas);
   },
 

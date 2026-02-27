@@ -14,15 +14,30 @@ const ConsultarPrazo = {
       ]);
       
       this.loadEmpresasSelect();
+      this.setupEventListeners();
       this.aplicarFiltros();
-      
-      // Event listener para busca em tempo real
-      const inputCliente = document.getElementById('filtro-cliente');
-      if (inputCliente) {
-        inputCliente.addEventListener('input', () => this.aplicarFiltros());
-      }
     } catch (error) {
       Utils.showNotification('Erro ao carregar faturas', 'error');
+    }
+  },
+
+  setupEventListeners() {
+    // Event listener para busca em tempo real
+    const inputCliente = document.getElementById('filtro-cliente');
+    if (inputCliente) {
+      inputCliente.addEventListener('input', () => this.aplicarFiltros());
+    }
+
+    // Event listener para filtro de empresa
+    const selectEmpresa = document.getElementById('filtro-empresa');
+    if (selectEmpresa) {
+      selectEmpresa.addEventListener('change', () => this.aplicarFiltros());
+    }
+
+    // Event listener para filtro de período
+    const selectPeriodo = document.getElementById('filtro-periodo');
+    if (selectPeriodo) {
+      selectPeriodo.addEventListener('change', () => this.aplicarFiltros());
     }
   },
 

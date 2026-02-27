@@ -1,0 +1,157 @@
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║              🚀 COMO FAZER DEPLOY - GUIA RÁPIDO 🚀             ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+📋 O QUE FOI FEITO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Persistência de Rota
+   → Ao pressionar F5, você permanece na mesma página
+
+✅ Filtro por Empresa
+   → Substituído filtro de Status por filtro de Empresa
+
+✅ Filtros Automáticos
+   → Removido botão "Aplicar Filtros"
+   → Filtros aplicados automaticamente ao digitar ou selecionar
+
+
+🚀 OPÇÃO 1: USAR SCRIPT AUTOMÁTICO (MAIS FÁCIL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Localize o arquivo: DEPLOY.bat
+
+2. Clique com BOTÃO DIREITO nele
+
+3. Selecione: "Executar como Administrador"
+
+4. Siga as instruções na tela
+
+   O script vai:
+   → Instalar Fly CLI automaticamente
+   → Fazer login no Fly.io
+   → Fazer deploy para produção
+
+
+📝 OPÇÃO 2: COMANDOS MANUAIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASSO 1: Abrir PowerShell como Administrador
+   → Pressione: Windows + X
+   → Clique em: "Windows PowerShell (Admin)"
+
+PASSO 2: Instalar Fly CLI
+   → Cole e execute:
+   
+   iwr https://fly.io/install.ps1 -useb | iex
+
+PASSO 3: Fechar e Abrir PowerShell Novamente
+   → Feche o PowerShell
+   → Abra novamente (não precisa ser como administrador)
+
+PASSO 4: Navegar até o Projeto
+   → Cole e execute:
+   
+   cd "C:\Users\Central de Vendas\Desktop\ATON"
+
+PASSO 5: Fazer Login
+   → Execute:
+   
+   fly auth login
+   
+   → Isso abrirá o navegador
+   → Faça login com sua conta Fly.io
+
+PASSO 6: Fazer Deploy
+   → Execute:
+   
+   fly deploy
+   
+   → Aguarde alguns minutos...
+
+PASSO 7: Abrir Aplicação
+   → Execute:
+   
+   fly open
+   
+   → Ou acesse: https://visao-faturas.fly.dev/
+
+
+✅ TESTAR APÓS DEPLOY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Acesse: https://visao-faturas.fly.dev/
+
+2. Login: daoliveira / 123456
+
+3. Vá em "Consultar a Prazo"
+
+4. Pressione F5
+   ✅ Deve permanecer em "Consultar a Prazo"
+
+5. Teste os filtros:
+   ✅ Digite um nome de cliente → filtra automaticamente
+   ✅ Selecione uma empresa → filtra automaticamente
+   ✅ Selecione um período → filtra automaticamente
+   ✅ Não tem mais botão "Aplicar Filtros"
+
+
+📞 COMANDOS ÚTEIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ver logs em tempo real:
+   fly logs
+
+Ver status da aplicação:
+   fly status
+
+Reiniciar aplicação:
+   fly apps restart visao-faturas
+
+Abrir aplicação no navegador:
+   fly open
+
+
+🐛 PROBLEMAS COMUNS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Erro: "fly: command not found"
+   ✅ Solução: Feche e abra o terminal novamente após instalar
+
+❌ Erro: "not logged in"
+   ✅ Solução: Execute: fly auth login
+
+❌ Erro: "permission denied"
+   ✅ Solução: Execute PowerShell como Administrador
+
+❌ Mudanças não aparecem no navegador
+   ✅ Solução: Limpe o cache (Ctrl + Shift + Delete)
+   ✅ Ou abra em modo anônimo (Ctrl + Shift + N)
+
+
+📊 STATUS ATUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Código implementado
+✅ Código commitado no Git
+✅ Push para GitHub realizado
+✅ Scripts de deploy criados
+⏳ Aguardando instalação do Fly CLI
+⏳ Aguardando deploy para produção
+
+
+🎯 PRÓXIMO PASSO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+→ Clique com botão direito em DEPLOY.bat
+→ Selecione "Executar como Administrador"
+→ Siga as instruções
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║  💡 DICA: Use o DEPLOY.bat para facilitar!                     ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
